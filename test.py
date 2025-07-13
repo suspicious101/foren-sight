@@ -5,13 +5,13 @@ from ultralytics import YOLO
 
 def estimate_explosive_type(radius):
     if radius < 8:
-        return "Hand Grenade (100–200g TNT)"
+        return "Hand Grenade (100-200g TNT)"
     elif radius < 18:
-        return "Small IED (0.5–1kg TNT)"
+        return "Small IED (0.5-1kg TNT)"
     elif radius < 35:
-        return "Medium IED or Backpack Bomb (2–5kg TNT)"
+        return "Medium IED or Backpack Bomb (2-5kg TNT)"
     elif radius < 80:
-        return "VBIED or Car Bomb (10–50kg TNT)"
+        return "VBIED or Car Bomb (10-50kg TNT)"
     else:
         return "Air-dropped Bomb or Heavy Explosive (100kg+ TNT)"
 
@@ -44,7 +44,7 @@ blast_center = (blast_center_x, blast_center_y)
 # saving output in jpg file with dot in center of damage
 image = cv2.imread("data/blast_images/blast1.jpg")
 cv2.circle(image, (int(blast_center_x), int(blast_center_y)), 10, (0,0,255), -1)
-cv2.imwrite("outputs/detection_with_center.jpg", image)
+cv2.imwrite("outputs/output.jpg", image)
 
 # finding distance from the center of damage using euclidean formula
 distances = []
@@ -59,10 +59,9 @@ for cx,cy in centers:
 blast_radius = max(distances)
 
 # draw a blast circle
-image = cv2.imread("outputs/detection_with_center.jpg")
 center_point = (int(blast_center[0]), int(blast_center[1]))
 cv2.circle(image, center_point, int(blast_radius), (0,0,255), 2)
-cv2.imwrite("outputs/blast_circle.jpg",image)
+cv2.imwrite("outputs/output.jpg",image)
 
 # saving output in json
 object_data = []
@@ -117,6 +116,24 @@ for box, cls in zip(results[0].boxes.xyxy, results[0].boxes.cls):
         "status": status
     })
 
+# Define color codes for statuses
+status_colors = {
+    "Fatal": (0, 0, 255),
+    "Critical Injury": (0, 165, 255),
+    "Minor Injury": (0, 255, 255),
+    "Safe": (0, 255, 0),
+}
+
+# Annotate each person
+for person in human_damage:
+    x, y = int(person["center"][0]), int(person["center"][1])
+    status = person["status"]
+    color = status_colors.get(status, (255, 255, 255))
+    cv2.circle(image, (x, y), 10, color, -1)
+    cv2.putText(image, status, (x - 20, y - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+
+cv2.imwrite("outputs/output.jpg", image)
+
 blast_data = {
     "blast_center": [blast_center_x, blast_center_y],
     "blast_radius": blast_radius,
@@ -125,7 +142,7 @@ blast_data = {
     "objects_detected": object_data,
 }
 
-with open("outputs/blast_analysis.json", "w") as f:
+with open("outputs/output.json", "w") as f:
     json.dump(blast_data, f, indent=2)
 
 results[0].show()

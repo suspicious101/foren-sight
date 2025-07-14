@@ -26,7 +26,7 @@ def estimate_scale(person_boxes):
 # n is nono smallest & fastest
 model = YOLO("yolov8n.pt")
 
-results = model("data/blast_images/blast1.jpg")
+results = model("data/blast_images/after.jpg")
 
 # finding centers of all detected boxes
 centers = []
@@ -42,7 +42,7 @@ blast_center_y = sum(y for x, y in centers) / len(centers)
 blast_center = (blast_center_x, blast_center_y)
 
 # saving output in jpg file with dot in center of damage
-image = cv2.imread("data/blast_images/blast1.jpg")
+image = cv2.imread("data/blast_images/after.jpg")
 cv2.circle(image, (int(blast_center_x), int(blast_center_y)), 10, (0,0,255), -1)
 cv2.imwrite("outputs/output.jpg", image)
 
@@ -134,12 +134,34 @@ for person in human_damage:
 
 cv2.imwrite("outputs/output.jpg", image)
 
+# before the attack
+img_before = cv2.imread("data/blast_images/before.jpg")
+results_before = model(img_before)[0]
+
+def get_person_centers(results):
+    centers = []
+    for box, cls in zip(results.boxes.xyxy, results.boxes.cls):
+        if results.names[int(cls)] == 'person':
+            x1, y1, x2, y2 = box[:4]
+            cx = ((x1 + x2) / 2).item()
+            cy = ((y1 + y2) / 2).item()
+            centers.append((cx, cy))
+    return centers
+
+people_before = len(get_person_centers(results_before))
+people_after = len(human_damage)
+
 blast_data = {
     "blast_center": [blast_center_x, blast_center_y],
     "blast_radius": blast_radius,
     "estimate_explosive_type": estimate_explosive_type(blast_radius),
     "human_damage_report": human_damage,
     "objects_detected": object_data,
+    "summary": {
+        "people_before": people_before,
+        "people_visible_after": people_after,
+        "people_lost": people_before - people_after
+    },
 }
 
 with open("outputs/output.json", "w") as f:

@@ -24,7 +24,7 @@ def estimate_scale(person_boxes):
     return scale
 
 # n is nono smallest & fastest
-model = YOLO("yolov8n.pt")
+model = YOLO("yolov8l.pt")
 
 results = model("data/blast_images/after.jpg")
 
@@ -187,5 +187,3 @@ blast_data = {
 
 with open("outputs/output.json", "w") as f:
     json.dump(blast_data, f, indent=2)
-
-results[0].show()

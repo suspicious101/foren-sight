@@ -11,6 +11,7 @@ blast_center = report_data["blast_center"]
 blast_radius = report_data["blast_radius"]
 estimate_explosive_type = report_data["estimate_explosive_type"]
 human_damage_report = report_data["human_damage_report"]
+recommended_services = report_data.get("recommended_services", [])
 object_data = report_data.get("objects_detected", [])
 summary = report_data.get("summary", {})
 
@@ -62,6 +63,15 @@ pdf.cell(0, 10, f"People Before: {summary.get('people_before', 'N/A')}", ln=True
 pdf.cell(0, 10, f"People Visible After: {summary.get('people_visible_after', 'N/A')}", ln=True)
 pdf.cell(0, 10, f"People Lost: {summary.get('people_lost', 'N/A')}", ln=True)
 pdf.ln(10)
+
+# Recommended Services
+if recommended_services:
+    pdf.set_font("Arial", 'B', 12)
+    pdf.cell(0, 10, "Recommended Emergency Services:", ln=True)
+    pdf.set_font("Arial", size=12)
+    for service in recommended_services:
+        pdf.cell(0, 10, f"- {service}", ln=True)
+    pdf.ln(5)
 
 # Save the PDF
 pdf.output("outputs/output.pdf")

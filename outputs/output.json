@@ -70,5 +70,8 @@
     "people_before": 5,
     "people_visible_after": 4,
     "people_lost": 1
-  }
+  },
+  "recommended_services": [
+    "Ambulance"
+  ]
 }

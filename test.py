@@ -151,6 +151,26 @@ def get_person_centers(results):
 people_before = len(get_person_centers(results_before))
 people_after = len(human_damage)
 
+def recommend_services(human_damage, objects_detected):
+    services = set()
+
+    fatal_count = sum(1 for p in human_damage if p['status'] == "Fatal")
+    if fatal_count >= 2:
+        services.add("Ambulance")
+
+    object_labels = [obj['label'] for obj in objects_detected]
+    if 'fire' in object_labels or 'smoke' in object_labels:
+        services.add("Fire Brigade")
+    if 'car' in object_labels and fatal_count > 0:
+        services.add("Rescue Team")
+    if 'backpack' in object_labels or 'suitcase' in object_labels:
+        services.add("Bomb Disposal Squad")
+
+    return list(services)
+
+# service needed
+services_needed = recommend_services(human_damage, object_data)
+
 blast_data = {
     "blast_center": [blast_center_x, blast_center_y],
     "blast_radius": blast_radius,
@@ -162,6 +182,7 @@ blast_data = {
         "people_visible_after": people_after,
         "people_lost": people_before - people_after
     },
+    "recommended_services": services_needed
 }
 
 with open("outputs/output.json", "w") as f:
